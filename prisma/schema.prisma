@@ -8,9 +8,62 @@ datasource db {
 }
 
 model User {
-  id        String     @id @default(auto()) @db.ObjectId @map("_id")
-  email     String     @unique
-  name      String
-  lastname  String
-  password  String
+  id              String         @id @default(auto()) @map("_id") @db.ObjectId
+  email           String         @unique
+  name            String
+  lastname        String
+  password        String
+  friendsIds      String[]       @db.ObjectId
+  conversations   Conversation[] @relation(fields: [conversationids], references: [id])
+  conversationids String[]       @db.ObjectId
+  groups          Group[]        @relation(fields: [groupsIds], references: [id])
+  groupsIds       String[]       @db.ObjectId
+  messages        Message[] 
+  reactions       Reaction[]
+}
+
+model FriendInvitation {
+  id              String         @id @default(auto()) @map("_id") @db.ObjectId
+  senderId        String         @db.ObjectId
+  receiverId      String         @db.ObjectId
+}
+
+model Message {
+  id              String         @id @default(auto()) @map("_id") @db.ObjectId
+  author          User           @relation(fields: [authorId], references: [id])
+  authorId        String         @db.ObjectId
+  content         String
+  date            DateTime
+  type            String
+  reaction        Reaction       @relation(fields: [reactionId], references: [id])
+  reactionId      String         @db.ObjectId @unique
+  conversation    Conversation?  @relation(fields: [conversationid], references: [id])
+  conversationid  String?        @db.ObjectId
+  groups          Group?         @relation(fields: [groupsIds], references: [id])
+  groupsIds       String?        @db.ObjectId
+}
+
+model Conversation {
+  id              String         @id @default(auto()) @map("_id") @db.ObjectId
+  participants    User[]         @relation(fields: [participantsIds], references: [id])
+  participantsIds String[]       @db.ObjectId
+  messages        Message[]
+}
+
+model Group {
+  id              String         @id @default(auto()) @map("_id") @db.ObjectId
+  name            String
+  participants    User[]         @relation(fields: [participantsIds], references: [id])
+  participantsIds String[]       @db.ObjectId
+  messages        Message[]
+  isPublic        Boolean
+}
+
+
+model Reaction {
+  id              String         @id @default(auto()) @map("_id") @db.ObjectId
+  user            User           @relation(fields: [userId], references: [id])
+  userId          String         @db.ObjectId
+  message         Message?       
+  content         String 
 }
